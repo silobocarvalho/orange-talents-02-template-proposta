@@ -1,5 +1,6 @@
 package br.com.zup.orange.proposal;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 
 import java.math.BigDecimal;
@@ -137,6 +138,40 @@ class ProposalControllerTest {
 		mockMvc.perform(MockMvcRequestBuilders.post(urlHost + "/proposal").contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(newProposal)))
 				.andExpect(MockMvcResultMatchers.status().isUnprocessableEntity());
+	}
+	
+	
+	@Test
+	@DisplayName("Create a proposal and verify if it is updated by Financial Analysis using external API - ELEGÍVEL")
+	void verifyIfProposalIsUpdatedWithFinancialAnalysisElegible() throws JsonProcessingException, Exception {
+
+		ProposalRequest newProposal = new ProposalRequest("12345678909", "sid@zup.com.br", "Sidartha Carvalho",
+				"Rua Joao Maria, 147", new BigDecimal(2500));	
+		
+		mockMvc.perform(MockMvcRequestBuilders.post(urlHost + "/proposal").contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(newProposal)))
+				.andExpect(MockMvcResultMatchers.status().isCreated());
+		
+		Proposal proposalFromDb = proposalRepository.findByDocument(newProposal.getDocument());
+		
+		assertEquals(ProposalStatus.ELEGIVEL, proposalFromDb.getStatus());
+	}
+	
+	@Test
+	@DisplayName("Create a proposal and verify if it is updated by Financial Analysis using external API - NÃO-ELEGÍVEL")
+	void verifyIfProposalIsUpdatedWithFinancialAnalysisNonElegible() throws JsonProcessingException, Exception {
+
+		//CPF started with 3 is NÃO ELEGIVEL
+		ProposalRequest newProposal = new ProposalRequest("33192040092", "sid@zup.com.br", "Sidartha Carvalho",
+				"Rua Joao Maria, 147", new BigDecimal(2500));	
+		
+		mockMvc.perform(MockMvcRequestBuilders.post(urlHost + "/proposal").contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(newProposal)))
+				.andExpect(MockMvcResultMatchers.status().isCreated());
+		
+		Proposal proposalFromDb = proposalRepository.findByDocument(newProposal.getDocument());
+		
+		assertEquals(ProposalStatus.NAO_ELEGIVEL, proposalFromDb.getStatus());
 	}
 
 }

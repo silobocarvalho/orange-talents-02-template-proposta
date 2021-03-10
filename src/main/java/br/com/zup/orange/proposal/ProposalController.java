@@ -17,6 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.tags.RequestContextAwareTag;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import br.com.zup.orange.proposal.externalrequests.financialanalysis.ClientFinancialAnalysis;
+import br.com.zup.orange.proposal.externalrequests.financialanalysis.ClientFinancialAnalysisRequest;
+import br.com.zup.orange.proposal.externalrequests.financialanalysis.ClientFinancialAnalysisResponse;
+
 @RestController
 @Validated
 @RequestMapping("/proposal")
@@ -24,6 +28,9 @@ public class ProposalController {
 
 	@Autowired
 	ProposalRepository proposalRepository;
+	
+	@Autowired
+	ClientFinancialAnalysis clientFinancialAnalysis;
 
 	@PostMapping
 	@Transactional
@@ -37,11 +44,10 @@ public class ProposalController {
 			return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
 		}
 		
-		//Verify if user has restrictions in his name
-		//http://localhost:9999/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config#/
-		
-		
 		Proposal proposal = proposalRepository.save(newProposal);
+
+		//Check if user has restriction in his name using external API
+		proposal.updateFinancialAnalysis(clientFinancialAnalysis);
 
 		String newProposalURL = uriComponentsBuilder.path("proposal/{id}")
 				.buildAndExpand(proposal.getId()).toString();
