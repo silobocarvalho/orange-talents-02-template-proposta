@@ -21,6 +21,7 @@ import br.com.zup.orange.proposal.externalrequests.financialanalysis.ClientFinan
 import br.com.zup.orange.proposal.externalrequests.financialanalysis.ClientFinancialAnalysisResponse;
 import br.com.zup.orange.proposal.externalrequests.financialanalysis.SolicitationStatus;
 import br.com.zup.orange.validation.CpfOrCnpj;
+import feign.FeignException;
 
 @Entity
 public class Proposal {
@@ -109,11 +110,11 @@ public class Proposal {
 			ClientFinancialAnalysisResponse responseFinancialAnalysis = clientFinancialAnalysis
 					.requestFinancialAnalysis(clientFinancialAnalysisRequest);
 
-			if (responseFinancialAnalysis.getStatus() == SolicitationStatus.SEM_RESTRICAO) {
+			if (responseFinancialAnalysis.getStatus().equals(SolicitationStatus.SEM_RESTRICAO)) {
 				this.status = ProposalStatus.ELEGIVEL;
 			}
 
-		} catch (Exception e) {
+		} catch (FeignException e) {
 			this.status = ProposalStatus.NAO_ELEGIVEL;
 		}
 
