@@ -1,13 +1,19 @@
 package br.com.zup.orange.proposal;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.transaction.Transactional;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -16,6 +22,10 @@ import javax.validation.constraints.PositiveOrZero;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpStatusCodeException;
 
+import br.com.zup.orange.proposal.card.Card;
+import br.com.zup.orange.proposal.externalrequests.card.CardAssociate;
+import br.com.zup.orange.proposal.externalrequests.card.CardRequest;
+import br.com.zup.orange.proposal.externalrequests.card.CardResponse;
 import br.com.zup.orange.proposal.externalrequests.financialanalysis.ClientFinancialAnalysis;
 import br.com.zup.orange.proposal.externalrequests.financialanalysis.ClientFinancialAnalysisRequest;
 import br.com.zup.orange.proposal.externalrequests.financialanalysis.ClientFinancialAnalysisResponse;
@@ -48,8 +58,14 @@ public class Proposal {
 	@PositiveOrZero
 	private BigDecimal salary;
 
+	private LocalDateTime createdAt = LocalDateTime.now();
+
 	@Enumerated
 	private ProposalStatus status;
+
+	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "card_id")
+	private Card card;
 
 	@Deprecated
 	public Proposal() {
@@ -92,6 +108,21 @@ public class Proposal {
 		return status;
 	}
 
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public Card getCard() {
+		return card;
+	}
+
+	@Override
+	public String toString() {
+		return "Proposal [id=" + id + ", document=" + document + ", email=" + email + ", name=" + name + ", address="
+				+ address + ", salary=" + salary + ", createdAt=" + createdAt + ", status=" + status + ", card=" + card
+				+ "]";
+	}
+
 	public ClientFinancialAnalysisRequest toFinancialAnalysis() {
 		if (this.id != null) {
 			return new ClientFinancialAnalysisRequest(this.document, this.name, this.id.toString());
@@ -117,8 +148,22 @@ public class Proposal {
 		} catch (FeignException e) {
 			this.status = ProposalStatus.NAO_ELEGIVEL;
 		}
+	}
 
-		
+	@Transactional
+	public void updateCardInfo(CardAssociate cardAssociate, ProposalRepository proposalRepository) {
+
+		CardResponse cardResponse = cardAssociate.getCardInfo(new CardRequest(this.id.toString()));
+
+		try {
+			if (cardResponse.getCardNumber() != null) {
+				this.card = cardResponse.toModel(proposalRepository);
+				proposalRepository.save(this);
+			}
+		} catch (FeignException fe) {
+			fe.printStackTrace();
+		}
+
 	}
 
 }

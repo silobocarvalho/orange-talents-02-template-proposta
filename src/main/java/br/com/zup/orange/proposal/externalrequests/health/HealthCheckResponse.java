@@ -1,4 +1,4 @@
-package br.com.zup.orange.proposal.externalrequests;
+package br.com.zup.orange.proposal.externalrequests.health;
 
 import br.com.zup.orange.health.HealthCheckStatus;
 

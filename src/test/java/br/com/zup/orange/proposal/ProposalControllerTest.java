@@ -1,13 +1,18 @@
 package br.com.zup.orange.proposal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureDataJpa;
@@ -37,7 +42,7 @@ class ProposalControllerTest {
 	
 	@Autowired
 	ProposalRepository proposalRepository;
-
+	
 	String urlHost = "http://localhost:8080";
 
 	@Test
@@ -172,6 +177,51 @@ class ProposalControllerTest {
 		Proposal proposalFromDb = proposalRepository.findByDocument(newProposal.getDocument());
 		
 		assertEquals(ProposalStatus.NAO_ELEGIVEL, proposalFromDb.getStatus());
+	}
+	
+	@Test
+	@DisplayName("Should create some proposals and associate a card number to a proposal")
+	void AssociateCardNumberAndProposal() throws JsonProcessingException, Exception {
+
+		//Should insert some proposals into database
+		
+		Proposal proposal1 = new Proposal("12345678909", "email1@zup.com.br", "Zup 1", "Rua dos Zuppers, 123", new BigDecimal(2500));
+		Proposal proposal2 = new Proposal("08273199088", "email2@zup.com.br", "Zup 2", "Rua dos Zuppers, 321", new BigDecimal(3000));
+		Proposal proposal3 = new Proposal("81172699020", "email3@zup.com.br", "Zup 3", "Rua dos Zuppers, 321", new BigDecimal(3000));
+		Proposal proposal4 = new Proposal("99090915001", "email4@zup.com.br", "Zup 4", "Rua dos Zuppers, 321", new BigDecimal(3000));
+		Proposal proposal5 = new Proposal("65642116000170", "email-pj-1@zup.com.br", "Zup PJ 1", "Rua dos Zuppers Ricos, 123", new BigDecimal(30000));
+		Proposal proposal6 = new Proposal("86875458000100", "email-pj-2@zup.com.br", "Zup PJ 2", "Rua dos Zuppers Ricos, 321", new BigDecimal(40000));
+		
+		List<Proposal> proposals = new ArrayList<>();
+		proposals.add(proposal1);
+		proposals.add(proposal2);
+		proposals.add(proposal3);
+		proposals.add(proposal4);
+		proposals.add(proposal5);
+		proposals.add(proposal6);
+
+		proposalRepository.saveAll(proposals);
+
+		ProposalRequest newProposal = new ProposalRequest("33192040092", "sid@zup.com.br", "Sidartha Carvalho",
+				"Rua Joao Maria, 147", new BigDecimal(2500));	
+		
+		mockMvc.perform(MockMvcRequestBuilders.post(urlHost + "/proposal").contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(newProposal)))
+				.andExpect(MockMvcResultMatchers.status().isCreated());
+		
+		// 7 insertions into database 6 + 1
+		List<Proposal> proposalsFromDb = proposalRepository.findAll();
+		assertEquals(7, proposalsFromDb.size());
+		
+		for (Proposal proposal : proposals) {
+			if(proposal.getStatus() != null && proposal.getStatus().equals(ProposalStatus.ELEGIVEL))
+			assertNotNull(proposal.getCard());			
+		}
+		
+		//only one is non elegible for card
+		Proposal nonElegibleProposal = proposalRepository.findByDocument(newProposal.getDocument());
+		assertNull(nonElegibleProposal.getCard());
+		
 	}
 
 }

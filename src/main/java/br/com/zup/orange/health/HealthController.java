@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.zup.orange.proposal.externalrequests.HealthCheckResponse;
-import br.com.zup.orange.proposal.externalrequests.HealthRequester;
+import br.com.zup.orange.proposal.externalrequests.health.HealthCheckResponse;
+import br.com.zup.orange.proposal.externalrequests.health.HealthRequester;
 
 @RestController
 @Validated
