@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -60,7 +61,7 @@ public class Proposal {
 
 	private LocalDateTime createdAt = LocalDateTime.now();
 
-	@Enumerated
+	@Enumerated(EnumType.STRING)
 	private ProposalStatus status;
 
 	@OneToOne(cascade = CascadeType.ALL)
@@ -163,7 +164,10 @@ public class Proposal {
 		} catch (FeignException fe) {
 			fe.printStackTrace();
 		}
-
+	}
+	
+	public ProposalResponse toResponse() {
+		return new ProposalResponse(this.id, this.name, this.createdAt, this.status);
 	}
 
 }

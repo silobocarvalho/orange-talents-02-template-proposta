@@ -2,9 +2,12 @@ package br.com.zup.orange.proposal;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
@@ -15,9 +18,12 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.tags.RequestContextAwareTag;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -76,6 +82,20 @@ public class ProposalController {
 		for (Proposal proposal : proposals) {
 			proposal.updateCardInfo(cardAssociate, proposalRepository);
 		}
+	}
+	
+	
+	@GetMapping("/{proposalId}")
+	@Transactional
+	public ResponseEntity<Object> getProposal(@Valid @NotEmpty @PathVariable("proposalId") String proposalId) {
+	
+		Optional<Proposal> proposalOptional = proposalRepository.findById(UUID.fromString(proposalId));
+		
+		if(proposalOptional.isEmpty()) {
+			return ResponseEntity.notFound().build();
+		}
+		
+		return ResponseEntity.ok().body(proposalOptional.get().toResponse());
 		
 	}
 
