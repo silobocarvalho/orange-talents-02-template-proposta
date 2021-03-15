@@ -1,6 +1,7 @@
 package br.com.zup.orange.proposal.card;
 
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
@@ -8,7 +9,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.MapsId;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -36,6 +39,9 @@ public class Card {
 	@NotNull
 	@OneToOne(mappedBy = "card")
 	Proposal proposal;
+	
+	@ManyToOne
+	Biometry biometry;
 
 	@Deprecated
 	public Card() {}
@@ -45,6 +51,10 @@ public class Card {
 		this.cardNumber = cardNumber;
 		this.releaseTime = releaseTime;
 		this.proposal = proposal;
+	}
+	
+	public void associateBiometry(Biometry biometry) {
+		this.biometry = biometry;
 	}
 
 	public UUID getId() {
@@ -66,5 +76,10 @@ public class Card {
 	public Proposal getProposal() {
 		return proposal;
 	}
+
+	public Biometry getBiometry() {
+		return biometry;
+	}
+	
 
 }
