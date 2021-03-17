@@ -12,16 +12,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class CardRequest {
 
-	@JsonProperty("idProposta")
+	@JsonProperty("id")
 	@NotBlank
-	String proposalId;
+	String CardId;
 
-	public CardRequest(String proposalId) {
-		this.proposalId = proposalId;
+	public CardRequest(@NotBlank String cardId) {
+		CardId = cardId;
 	}
 
-
-	public String getProposalId() {
-		return proposalId;
+	public String getCardId() {
+		return CardId;
 	}
+
+	
 }

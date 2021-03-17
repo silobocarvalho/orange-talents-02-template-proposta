@@ -9,6 +9,8 @@ import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.http.HttpHeaders;
@@ -28,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.tags.RequestContextAwareTag;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import br.com.zup.orange.proposal.externalrequests.card.CardAssociate;
+import br.com.zup.orange.proposal.externalrequests.card.CardAPIClient;
 import br.com.zup.orange.proposal.externalrequests.financialanalysis.ClientFinancialAnalysis;
 
 @RestController
@@ -37,6 +39,8 @@ import br.com.zup.orange.proposal.externalrequests.financialanalysis.ClientFinan
 @Component
 public class ProposalController {
 
+	private final Logger logger = LoggerFactory.getLogger(ProposalController.class);
+	
 	@Autowired
 	ProposalRepository proposalRepository;
 	
@@ -44,7 +48,7 @@ public class ProposalController {
 	ClientFinancialAnalysis clientFinancialAnalysis;
 	
 	@Autowired
-	CardAssociate cardAssociate;
+	CardAPIClient cardAssociate;
 
 	@PostMapping
 	@Transactional
@@ -81,6 +85,10 @@ public class ProposalController {
 		
 		for (Proposal proposal : proposals) {
 			proposal.updateCardInfo(cardAssociate, proposalRepository);
+			logger.info("== Proposal update from @Scheduled method ==");
+			logger.info("Proposal ID: " + proposal.getId());
+			logger.info("Card ID: " + proposal.getCard().getId());
+			logger.info("Card Number: " + proposal.getCard().getCardNumber());
 		}
 	}
 	

@@ -12,15 +12,15 @@ import org.springframework.validation.annotation.Validated;
 import br.com.zup.orange.validation.CpfOrCnpj;
 
 @Validated
-public class CardRequest {
+public class CardBiometryRequest {
 
 	@NotBlank
 	String biometryEncoded;
 
 	@Deprecated
-	public CardRequest() {};
+	public CardBiometryRequest() {};
 	
-	public CardRequest(@NotBlank String biometryEncoded) {
+	public CardBiometryRequest(@NotBlank String biometryEncoded) {
 		this.biometryEncoded = biometryEncoded;
 	}
 

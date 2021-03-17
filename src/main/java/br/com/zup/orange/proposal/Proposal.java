@@ -24,7 +24,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpStatusCodeException;
 
 import br.com.zup.orange.proposal.card.Card;
-import br.com.zup.orange.proposal.externalrequests.card.CardAssociate;
+import br.com.zup.orange.proposal.card.CardBiometryRequest;
+import br.com.zup.orange.proposal.externalrequests.card.CardAPIClient;
 import br.com.zup.orange.proposal.externalrequests.card.CardRequest;
 import br.com.zup.orange.proposal.externalrequests.card.CardResponse;
 import br.com.zup.orange.proposal.externalrequests.financialanalysis.ClientFinancialAnalysis;
@@ -152,13 +153,13 @@ public class Proposal {
 	}
 
 	@Transactional
-	public void updateCardInfo(CardAssociate cardAssociate, ProposalRepository proposalRepository) {
+	public void updateCardInfo(CardAPIClient cardAssociate, ProposalRepository proposalRepository) {
 
 		CardResponse cardResponse = cardAssociate.getCardInfo(new CardRequest(this.id.toString()));
 
 		try {
 			if (cardResponse.getCardNumber() != null) {
-				this.card = cardResponse.toModel(proposalRepository);
+				this.card = cardResponse.toModel(proposalRepository, this.id);
 				proposalRepository.save(this);
 			}
 		} catch (FeignException fe) {

@@ -4,8 +4,6 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
@@ -15,8 +13,13 @@ import br.com.zup.orange.proposal.Proposal;
 import br.com.zup.orange.proposal.ProposalRepository;
 import br.com.zup.orange.proposal.card.Card;
 
+
 public class CardResponse {
 
+	@JsonProperty("idProposta")
+	@NotBlank
+	String proposalId;
+	
 	@JsonProperty("id")
 	@NotBlank
 	String cardNumber;
@@ -24,16 +27,20 @@ public class CardResponse {
 	@JsonProperty("emitidoEm")
 	@NotNull
 	LocalDateTime releaseTime;
+	
 
-	@JsonProperty("idProposta")
-	@NotBlank
-	String proposalId;
+	@Deprecated
+	public CardResponse() {}
 
-	public CardResponse(String cardNumber, LocalDateTime releaseTime, String proposalId) {
+	
+
+	public CardResponse(@NotBlank String proposalId, @NotBlank String cardNumber, @NotNull LocalDateTime releaseTime) {
+		this.proposalId = proposalId;
 		this.cardNumber = cardNumber;
 		this.releaseTime = releaseTime;
-		this.proposalId = proposalId;
 	}
+
+
 
 	public String getCardNumber() {
 		return cardNumber;
@@ -53,16 +60,16 @@ public class CardResponse {
 				+ "]";
 	}
 	
-	public Card toModel(ProposalRepository proposalRepository) {
+	public Card toModel(ProposalRepository proposalRepository, UUID proposalId) {
+		
+		if(this.proposalId == null) {this.proposalId = proposalId.toString();}
+		
 		Optional<Proposal> proposalOptional = proposalRepository.findById(UUID.fromString(this.proposalId));
 		
 		if(proposalOptional != null) {
 			return new Card(this.cardNumber, this.releaseTime, proposalOptional.get());
 		}
-		
 		return null;
-		
-		
 	}
 	
 	

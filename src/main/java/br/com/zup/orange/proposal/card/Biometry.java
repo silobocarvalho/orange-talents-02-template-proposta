@@ -15,7 +15,7 @@ public class Biometry {
 
 	@Id
 	@GeneratedValue
-	private long id;
+	private UUID id;
 	
 	@NotNull
 	private LocalDateTime createdAt = LocalDateTime.now();
@@ -27,7 +27,7 @@ public class Biometry {
 		this.biometry = biometry;
 	}
 
-	public long getId() {
+	public UUID getId() {
 		return id;
 	}
 
