@@ -32,6 +32,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import br.com.zup.orange.proposal.externalrequests.card.CardAPIClient;
 import br.com.zup.orange.proposal.externalrequests.financialanalysis.ClientFinancialAnalysis;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
 
 @RestController
 @Validated
@@ -50,11 +52,26 @@ public class ProposalController {
 	@Autowired
 	CardAPIClient cardAssociate;
 	
+	private final Tracer tracer;
 
+	public ProposalController(Tracer tracer) {
+		 this.tracer = tracer;
+	}
+	
 	@PostMapping
 	@Transactional
 	public ResponseEntity<Object> addProposal(@Valid @RequestBody ProposalRequest newRequestProposal,
 			UriComponentsBuilder uriComponentsBuilder) {
+		
+		Span activeSpan = tracer.activeSpan();
+		activeSpan.setTag("user.email", newRequestProposal.getEmail());
+		/*
+		 * Used as Tag, but for another purpose :)
+		Span activeSpan = tracer.activeSpan();
+		String userEmail = activeSpan.getBaggageItem("user.email");
+		activeSpan.setBaggageItem("user.email", userEmail);
+		*/
+
 		
 		Proposal newProposal = newRequestProposal.toModel();
 		
