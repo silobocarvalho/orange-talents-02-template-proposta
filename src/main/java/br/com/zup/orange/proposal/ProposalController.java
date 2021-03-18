@@ -49,6 +49,7 @@ public class ProposalController {
 	
 	@Autowired
 	CardAPIClient cardAssociate;
+	
 
 	@PostMapping
 	@Transactional
