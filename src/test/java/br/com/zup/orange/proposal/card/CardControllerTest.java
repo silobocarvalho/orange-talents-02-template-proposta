@@ -1,8 +1,12 @@
 package br.com.zup.orange.proposal.card;
 
+import static org.hamcrest.CoreMatchers.any;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.anything;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 
 import java.math.BigDecimal;
@@ -12,10 +16,13 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureDataJpa;
@@ -24,11 +31,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,6 +48,9 @@ import br.com.zup.orange.proposal.ProposalRepository;
 import br.com.zup.orange.proposal.ProposalRequest;
 import br.com.zup.orange.proposal.card.travel.TravelNotice;
 import br.com.zup.orange.proposal.card.travel.TravelNoticeRequest;
+import br.com.zup.orange.proposal.card.wallet.WalletAssociate;
+import br.com.zup.orange.proposal.card.wallet.WalletAssociateRequest;
+import br.com.zup.orange.proposal.card.wallet.WalletAssociateStatus;
 import br.com.zup.orange.proposal.externalrequests.card.CardAPIClient;
 import br.com.zup.orange.proposal.externalrequests.card.CardBlockRequest;
 import br.com.zup.orange.proposal.externalrequests.card.CardBlockResponse;
@@ -66,6 +79,11 @@ public class CardControllerTest {
 
 	String urlHost = "http://localhost:8080";
 
+	@BeforeEach
+	public void init() {
+	    MockitoAnnotations.initMocks(this);
+	}
+	
 	@Test
 	@DisplayName("Associate biometry to a Card")
 	void associateBiometryToCard() throws JsonProcessingException, Exception {
@@ -268,4 +286,36 @@ public class CardControllerTest {
 		.andExpect(MockMvcResultMatchers.status().isBadRequest());
 		
 	}
+	
+	/* @Test
+	Associate card with Wallet : Tested with postman.
+	
+	@Spy
+	CardController cardController;
+	
+	@Autowired
+	CardAPIClient cardAPI;
+	
+	
+	@Test
+	@DisplayName("Associate Wallet with Card")
+	void associateWalletWithCard() throws JsonProcessingException, Exception {
+
+		Proposal proposal = new Proposal("12345678909", "sid-test-card@zup.com.br", "Sidartha Carvalho",
+				"Rua dos Zuppers, 141", new BigDecimal(2500));
+		proposalRepository.save(proposal);
+
+		Card card = new Card("1111222233334444", LocalDateTime.now(), proposal);
+		card = cardRepository.save(card);
+		
+		WalletAssociateRequest walletAssociateRequest = new WalletAssociateRequest("paypal", proposal.getEmail());
+		
+		Mockito.doReturn(WalletAssociateStatus.ASSOCIATED).when(cardController).walletAssociateExternalRequest(cardAPI, card, walletAssociateRequest.toModel());
+		
+		ResponseEntity<?> responseEntity = cardController.WalletAssociate(card.getId().toString(), walletAssociateRequest, UriComponentsBuilder.newInstance());
+		
+		System.out.println(responseEntity.getHeaders().getLocation().toString());
+	}
+	*/
+	
 }

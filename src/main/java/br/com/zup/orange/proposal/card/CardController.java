@@ -41,6 +41,9 @@ import br.com.zup.orange.proposal.ProposalController;
 import br.com.zup.orange.proposal.ProposalRepository;
 import br.com.zup.orange.proposal.card.travel.TravelNoticeRequest;
 import br.com.zup.orange.proposal.card.travel.TravelStatus;
+import br.com.zup.orange.proposal.card.wallet.WalletAssociateRequest;
+import br.com.zup.orange.proposal.card.wallet.WalletAssociateStatus;
+import br.com.zup.orange.proposal.card.wallet.WalletAssociate;
 import br.com.zup.orange.proposal.card.travel.TravelNotice;
 import br.com.zup.orange.proposal.externalrequests.card.CardAPIClient;
 import br.com.zup.orange.proposal.externalrequests.card.CardBlockRequest;
@@ -49,6 +52,7 @@ import br.com.zup.orange.proposal.externalrequests.card.CardResponse;
 import br.com.zup.orange.proposal.externalrequests.card.travelnotice.TravelNoticeExternalRequest;
 import br.com.zup.orange.proposal.externalrequests.card.travelnotice.TravelNoticeExternalResponse;
 import br.com.zup.orange.proposal.externalrequests.financialanalysis.ClientFinancialAnalysis;
+import br.com.zup.orange.proposal.externalrequests.wallet.WalletAssociateExternalResponse;
 import feign.FeignException;
 
 @RestController
@@ -228,4 +232,77 @@ public class CardController {
 		return travelNoticeStatus;
 	}
 
+	@PostMapping("/{cardId}/walletassociate")
+	@Transactional
+	public ResponseEntity<Object> WalletAssociate(@Valid @NotEmpty @PathVariable("cardId") String cardId,
+			@Valid @RequestBody WalletAssociateRequest walletRequest, UriComponentsBuilder uriComponentsBuilder) {
+
+		try {
+			UUID.fromString(cardId);
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.badRequest().build();
+		}
+
+		Optional<Card> cardOptional = cardRepository.findById(UUID.fromString(cardId));
+
+		if (cardOptional.isEmpty()) {
+			return ResponseEntity.notFound().build();
+		}
+
+		Card cardFromDb = cardOptional.get();
+
+		WalletAssociate walletAssociate = walletRequest.toModel();
+		
+		WalletAssociateStatus walletAssociateStatus = walletAssociateExternalRequest(cardAPI, cardFromDb, walletAssociate);
+		walletAssociate.associateWallet(walletAssociateStatus);
+		
+		
+		if(walletAssociate.getWalletAssociateStatus().equals(WalletAssociateStatus.BLOCKED)) {
+			//External server return error when wallet already associated with card.
+			return ResponseEntity.unprocessableEntity().build();
+		}
+		
+		if(walletAssociate.getWalletAssociateStatus().equals(WalletAssociateStatus.ASSOCIATED)) {
+			//associate with internal card object and persist.
+			entityManager.persist(walletAssociate);
+			
+			cardFromDb.associateWallet(walletAssociate);
+			cardRepository.save(cardFromDb);
+			
+			//201 com o header location com a url para a carteira criada
+			
+			String newWalletAssociateURL = uriComponentsBuilder.path("walletassociate/{id}")
+					.buildAndExpand(walletAssociate.getId()).toString();
+
+			HttpHeaders headers = new HttpHeaders();
+			headers.setLocation(URI.create(newWalletAssociateURL));
+			return new ResponseEntity<>(headers, HttpStatus.CREATED);
+		}
+
+		return ResponseEntity.badRequest().build();
+	}
+	
+	@Transactional
+	public WalletAssociateStatus walletAssociateExternalRequest(CardAPIClient cardAPI, Card cardFromDb, WalletAssociate walletAssociate) {
+
+		
+		WalletAssociateExternalResponse walletAssociateResponse = null;
+		try {
+			walletAssociateResponse = cardAPI.associateWallet(cardFromDb.getCardNumber(), walletAssociate.toRequest());
+		} catch (FeignException fe) {
+			logger.info("== Card Controller WalletAssociateExternalRequest() ==");
+			logger.info(fe.getMessage());
+			return WalletAssociateStatus.BLOCKED;
+		}
+
+		WalletAssociateStatus walletAssociateStatus = walletAssociateResponse.validateResult();
+
+		logger.info("== Card Controller WalletAssociateExternalRequest() ==");
+		logger.info("Wallet Associate Status from External System: "
+				+ walletAssociateResponse.getWalletAssociateStatus().toString());
+		logger.info("Wallet Associate ID from External System: " + walletAssociateResponse.getWalletAssociateId());
+
+		return walletAssociateStatus.ASSOCIATED;
+	}
+	
 }

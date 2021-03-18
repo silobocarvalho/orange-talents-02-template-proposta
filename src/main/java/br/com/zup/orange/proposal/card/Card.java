@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import br.com.zup.orange.proposal.Proposal;
 
 import br.com.zup.orange.proposal.card.travel.TravelNotice;
+import br.com.zup.orange.proposal.card.wallet.WalletAssociate;
 
 @Entity
 public class Card {
@@ -53,6 +54,9 @@ public class Card {
 	
 	@ManyToOne
 	TravelNotice travelNotice;
+	
+	@ManyToOne
+	WalletAssociate walletAssociate;
 
 	@Deprecated
 	public Card() {}
@@ -67,6 +71,10 @@ public class Card {
 	
 	public void associateBiometry(Biometry biometry) {
 		this.biometry = biometry;
+	}
+	
+	public void associateWallet(WalletAssociate walletAssociate) {
+		this.walletAssociate = walletAssociate;
 	}
 
 	public UUID getId() {
@@ -107,6 +115,10 @@ public class Card {
 
 	public TravelNotice getTravelNotice() {
 		return travelNotice;
+	}
+
+	public WalletAssociate getWalletAssociate() {
+		return walletAssociate;
 	}
 	
 

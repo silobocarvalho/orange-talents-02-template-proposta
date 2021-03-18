@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import br.com.zup.orange.proposal.card.CardBiometryRequest;
 import br.com.zup.orange.proposal.externalrequests.card.travelnotice.TravelNoticeExternalRequest;
 import br.com.zup.orange.proposal.externalrequests.card.travelnotice.TravelNoticeExternalResponse;
+import br.com.zup.orange.proposal.externalrequests.wallet.WalletAssociateExternalRequest;
+import br.com.zup.orange.proposal.externalrequests.wallet.WalletAssociateExternalResponse;
 
 @FeignClient(name = "card.api", url = "${card.api.url}")
 public interface CardAPIClient {
@@ -20,4 +22,10 @@ public interface CardAPIClient {
 	
 	@PostMapping("/{id}/avisos")
 	TravelNoticeExternalResponse travelNotice(@PathVariable String id, TravelNoticeExternalRequest travelNoticeExternalRequest);
+
+
+	@PostMapping("/{id}/carteiras")
+	WalletAssociateExternalResponse associateWallet(@PathVariable String id, WalletAssociateExternalRequest walletAssociateExternalRequest);
+
+	
 }
