@@ -1,0 +1,40 @@
+
+- git clone http://www
+
+- git status
+
+- git branch : saber qual branch está sendo usada.
+
+- git add .
+
+- git commit -m "msg"
+
+Enviar:
+- git push origin master:cria_pais
+
+Pegar:
+- git pull 
+
+Se não funcionar:
+- git pull origin master
+
+Visualizar os commits:
+- git log
+-- aperte q para sair.
+
+-------------------------
+
+- Fazer o fork dos templates da Zup
+
+1. git status
+
+2. git remote (verificar se há algum endereço associado)
+
+- git remote add origin link (para inserir se nunca tinha sido criado)
+
+- git remote set-url origin https://github.com/silobocarvalho/orange-talents-02-template-casa-do-codigo
+
+- git push -u origin main -f
+
+
+Clone specific Branch: git clone --branch dev_etapa_1 https://github.com/silobocarvalho/liga-qualidade-desafio-emprestimo-imobiliario

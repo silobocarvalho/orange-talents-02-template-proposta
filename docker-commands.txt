@@ -1,0 +1,23 @@
+- Gerar o .Jar do projeto. o mvnw é acessivel dentro da pasta do projeto spring: mvnw clean pacakge.
+Para não executar os testes, add: -Dmaven.test.skip=true ao mvnw.
+É gerado um arquivo .jar dentro do /target do seu projeto.
+
+- Criar um arquivo Dockerfile dentro do projeto contendo:
+
+FROM openjdk:11
+ARG JAR_FILE=target/Proposal-0.0.1-SNAPSHOT.jar
+COPY ${JAR_FILE} app.jar
+ENTRYPOINT ["java","-jar","/app.jar"]
+
+- docker build -t sidartha/proposal . --> não esquecer do ponto logo apos o nome proposal.
+
+- Para iniciar a imagem criada: docker container run -d -p 8080:8080 sidartha/proposal --name sid-proposal
+
+
+
+----
+Depois de criar a imagem, para o Prometheus se comunicar com a imagem proposal criada e levantada no docker-compose.yaml é preciso apagar o network-mode e deixá-los todos na mesma rede.
+Feito isso, no prometheus.yaml colocar: 
+	static_configs:
+      - targets: ['proposal:8080']
+onde proposal é o hostname: proposal dentro do docker-compose.yaml.
