@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -13,6 +14,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
+import javax.persistence.PostLoad;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.transaction.Transactional;
 import javax.validation.constraints.Email;
@@ -20,7 +24,11 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
 
+import org.springframework.core.env.Environment;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 import org.springframework.web.client.HttpStatusCodeException;
 
 import br.com.zup.orange.proposal.card.Card;
@@ -32,6 +40,7 @@ import br.com.zup.orange.proposal.externalrequests.financialanalysis.ClientFinan
 import br.com.zup.orange.proposal.externalrequests.financialanalysis.ClientFinancialAnalysisRequest;
 import br.com.zup.orange.proposal.externalrequests.financialanalysis.ClientFinancialAnalysisResponse;
 import br.com.zup.orange.proposal.externalrequests.financialanalysis.SolicitationStatus;
+import br.com.zup.orange.security.StringAttributeConverter;
 import br.com.zup.orange.validation.CpfOrCnpj;
 import feign.FeignException;
 
@@ -44,6 +53,7 @@ public class Proposal {
 
 	@CpfOrCnpj
 	@NotBlank
+	@Convert(converter = StringAttributeConverter.class)
 	private String document;
 
 	@NotBlank
@@ -166,7 +176,7 @@ public class Proposal {
 			fe.printStackTrace();
 		}
 	}
-	
+
 	public ProposalResponse toResponse() {
 		return new ProposalResponse(this.id, this.name, this.createdAt, this.status);
 	}
